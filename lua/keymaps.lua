@@ -1,5 +1,68 @@
--- [[ Basic Keymaps ]]
+-- Basic Keymaps
 --  See `:help vim.keymap.set()`
+vim.g.mapleader = ' '
+vim.keymap.set('n', '<leader>pv', vim.cmd.Ex)
+
+-- Move selection line up / down
+vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv")
+vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv")
+
+-- Run plenary test for current file
+vim.api.nvim_set_keymap('n', '<leader>tf', '<Plug>PlenaryTestFile', { noremap = false, silent = false })
+
+-- Scroll half page up/down while cursor is centered
+vim.keymap.set('n', '<C-d>', '<C-d>zz')
+vim.keymap.set('n', '<C-u>', '<C-u>zz')
+
+-- Search navigation with centering
+vim.keymap.set('n', 'n', 'nzzzv')
+vim.keymap.set('n', 'N', 'Nzzzv')
+
+-- Re-indent paragraph
+vim.keymap.set('n', '=ap', "ma=ap'a")
+
+-- Restart LSP (If glitches)
+vim.keymap.set('n', '<leader>zig', '<cmd>LspRestart<cr>')
+
+-- Paste without overwriting clipboard
+vim.keymap.set('x', '<leader>p', [["_dP]])
+
+-- Yank to system clipboard
+vim.keymap.set({ 'n', 'v' }, '<leader>y', [["+y]])
+vim.keymap.set('n', '<leader>Y', [["+Y]])
+
+-- Delete without yanking
+vim.keymap.set({ 'n', 'v' }, '<leader>d', '"_d')
+
+-- Esc Alternative
+vim.keymap.set('i', '<C-c>', '<Esc>')
+
+-- Disable Q
+vim.keymap.set('n', 'Q', '<nop>')
+
+-- Quickfix / location navigation
+vim.keymap.set('n', '<C-k', '<cmd>cnext<CR>zz')
+vim.keymap.set('n', '<C-j', '<cmd>cprev<CR>zz')
+vim.keymap.set('n', '<leader>k', '<cmd>lnext<CR>zz')
+vim.keymap.set('n', '<leader>j', '<cmd>lprev<CR>zz')
+
+-- Search & replace current word
+vim.keymap.set('n', '<leader>s', [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
+
+-- Make current file executable
+vim.keymap.set('n', '<leader>x', '<cmd>!chmod +x %<CR>', { silent = true })
+
+-- Cycle left/right through visible buffers
+vim.keymap.set('n', '<S-h>', '<Cmd>bprevious<CR>', { desc = 'Previous buffer' })
+vim.keymap.set('n', '<S-l>', '<Cmd>bnext<CR>', { desc = 'Next buffer' })
+
+-- Jump directly to the Nth visible bufferline tab:
+for i = 1, 9 do
+  vim.keymap.set('n', '<leader>' .. i, '<Cmd>BufferLineGoToBuffer ' .. i .. '<CR>', { desc = 'Go to buffer ' .. i })
+end
+
+-- Close (delete) current buffer
+vim.keymap.set('n', '<C-q>', '<Cmd>bdelete<CR>', { desc = 'Close current buffer' })
 
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
