@@ -143,9 +143,8 @@ return {
       local util = require 'lspconfig.util'
 
       local servers = {
-        -- We will set up ts_ls explicitly with autostart=false
         ts_ls = {
-          autostart = true, -- ⛔ stop auto-start; avoids the red error path
+          autostart = true,
           filetypes = {
             'javascript',
             'javascriptreact',
@@ -170,6 +169,11 @@ return {
           },
           on_attach = on_attach_common,
         },
+
+        pyright = {},
+        html = {},
+        cssls = {},
+        clangd = {},
       }
 
       -- Ensure tools/servers installed
@@ -177,10 +181,14 @@ return {
       vim.list_extend(ensure_installed, {
         'stylua',
         'typescript-language-server',
+        'pyright',
+        'html-lsp',
+        'cssls',
+        'clangd',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
-      -- Mason-lspconfig handler: set up everything (ts_ls included) with our table
+      -- Mason-lspconfig handler: set up everything with our table
       require('mason-lspconfig').setup {
         ensure_installed = {},
         automatic_installation = false,
