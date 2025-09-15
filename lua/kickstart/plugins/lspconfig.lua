@@ -200,13 +200,6 @@ return {
           end,
         },
       }
-
-      ------------------------------------------------------------------------
-      -- Optional: user command to start TypeScript LSP manually when you want
-      ------------------------------------------------------------------------
-      vim.api.nvim_create_user_command('TSLspStart', function()
-        vim.cmd 'LspStart ts_ls'
-      end, {})
     end,
   },
 }
