@@ -12,11 +12,11 @@ return {
   lazy = false,
   keys = {
     -- toggle the tree open/closed
-    { '<leader>e', ':Neotree toggle<CR>', desc = 'NeoTree toggle', silent = true },
+    { '<leader>E', ':Neotree toggle<CR>', desc = 'NeoTree toggle', silent = true },
 
     -- focus tree / focus back
     {
-      '<leader>f',
+      '<leader>e',
       function()
         local function find_neotree_win()
           for _, win in ipairs(vim.api.nvim_list_wins()) do
