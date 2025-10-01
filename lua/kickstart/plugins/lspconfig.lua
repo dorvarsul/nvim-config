@@ -174,6 +174,7 @@ return {
         html = {},
         cssls = {},
         clangd = {},
+        jdtls = {},
       }
 
       -- Ensure tools/servers installed
@@ -185,6 +186,7 @@ return {
         'html-lsp',
         'cssls',
         'clangd',
+        'jdtls',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
