@@ -141,6 +141,7 @@ return {
       ------------------------------------------------------------------------
       local lspconfig = require 'lspconfig'
       local util = require 'lspconfig.util'
+      local javafx_path = '/home/dorvarsul/Desktop/javafx/javafx-sdk-21.0.9'
 
       local servers = {
         ts_ls = {
