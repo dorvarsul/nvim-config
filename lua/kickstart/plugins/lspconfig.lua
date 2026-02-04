@@ -52,6 +52,12 @@ return {
       -- Diagnostics UI
       ------------------------------------------------------------------------
       vim.diagnostic.config {
+        --- Disable LSP diagnostics, we'll manage them ourselves
+        enable = false,
+        virtual_text = false,
+        signs = false,
+        underline = false,
+
         severity_sort = true,
         float = { border = 'rounded', source = 'if_many' },
         underline = { severity = vim.diagnostic.severity.ERROR },
@@ -141,7 +147,6 @@ return {
       ------------------------------------------------------------------------
       local lspconfig = require 'lspconfig'
       local util = require 'lspconfig.util'
-      local javafx_path = '/home/dorvarsul/Desktop/javafx/javafx-sdk-21.0.9'
 
       local servers = {
         ts_ls = {
@@ -175,7 +180,6 @@ return {
         html = {},
         cssls = {},
         clangd = {},
-        jdtls = {},
       }
 
       -- Ensure tools/servers installed
@@ -187,7 +191,6 @@ return {
         'html-lsp',
         'cssls',
         'clangd',
-        'jdtls',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 

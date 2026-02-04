@@ -15,7 +15,11 @@ return {
     local launcher_jar = vim.fn.glob(mason_jdtls_path .. '/plugins/org.eclipse.equinox.launcher_*.jar')
     local config_dir = mason_jdtls_path .. '/config_linux'
 
-    local workspace_dir = vim.fn.expand '~/Desktop/projects/advanced-java-20554'
+    -- Use a dedicated workspace path outside source tree
+    local workspace_dir = vim.fn.expand '~/.cache/jdtls-workspace/advanced-java-20554'
+
+    -- Helper list for project root detection files
+    local root_files = { '.git', 'pom.xml', 'build.gradle', '.project', '.classpath' }
 
     lspconfig.jdtls.setup {
       cmd = {
@@ -33,16 +37,16 @@ return {
         workspace_dir,
       },
       root_dir = function(fname)
-        return util.root_pattern '.git'(fname) or util.path.dirname(fname)
+        return util.root_pattern(unpack(root_files))(fname) or util.path.dirname(fname)
       end,
       on_attach = function(client, bufnr)
-        -- Your existing on_attach_common or custom functions here
+        -- Your on_attach_common or custom on_attach logic
       end,
       capabilities = capabilities,
       settings = {
         java = {
           project = {
-            referencedLibraries = { '/home/dorvarsul/Desktop/javafx/javafx-sdk-21.0.9/lib/*.jar' },
+            referencedLibraries = { javafx_path .. '/lib/*.jar' },
           },
           format = {
             enabled = true,
