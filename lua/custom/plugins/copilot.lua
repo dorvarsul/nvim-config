@@ -77,8 +77,29 @@ return {
         end,
         desc = 'CopilotChat - Explain how the code works step by step',
       },
+      -- 5. Debug Console/Messages
+      {
+        '<leader>cpd',
+        function()
+          -- Capture the last 20 lines of the Neovim message history
+          local messages = vim.fn.execute 'messages'
+          local lines = vim.split(messages, '\n')
+          local last_output = table.concat(vim.list_slice(lines, #lines - 20), '\n')
 
-      -- 4. Open Chat (Standard)
+          if last_output ~= '' then
+            require('CopilotChat').ask(
+              'I am seeing this console output/error. Can you explain what is happening and how to fix it?\n\nOutput:\n' .. last_output,
+              {
+                selection = false, -- Don't use current code selection
+              }
+            )
+          else
+            print 'No console output found to debug!'
+          end
+        end,
+        desc = 'CopilotChat - Debug latest console output',
+      },
+      -- 6. Open Chat (Standard)
       { '<leader>cc', '<cmd>CopilotChat<cr>', desc = 'CopilotChat - Open chat' },
     },
   },
