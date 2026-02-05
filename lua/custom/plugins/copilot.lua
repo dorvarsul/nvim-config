@@ -55,11 +55,27 @@ return {
       {
         '<leader>cpe',
         function()
-          require('CopilotChat').ask('/explain how all the code in #buffer:listed works together.', {
-            selection = false, -- Ignore current cursor/highlight
-          })
+          require('CopilotChat').ask(
+            '#buffer:listed /explain Act as a senior software architect. I am going to provide code. please analyze them and provide 1.A high level summary of what this code does, 2. Identify the main modules, classes or functions and how they interact, 3.Explain how data enters the system, moves through these components and where it ends up, 4.Identify any specific patterns used',
+            {
+              selection = false, -- Ignore current cursor/highlight
+            }
+          )
         end,
-        desc = 'CopilotChat - Explain Project',
+        desc = 'CopilotChat - Explain Project Architecture',
+      },
+      --4. Understand how the code does what it does
+      {
+        '<leader>cpf',
+        function()
+          require('CopilotChat').ask(
+            '#buffer:listed /explain Act as a lead developer, walk me through the logic step by step, for each significant function or block, explain: 1. Inputs and Outputs, 2.Edge cases, 3. Are there any performance bottlenecks or clever optimizations here, 4. What external libraries or internal modules is this logic reliant here?',
+            {
+              selection = false,
+            }
+          )
+        end,
+        desc = 'CopilotChat - Explain how the code works step by step',
       },
 
       -- 4. Open Chat (Standard)
