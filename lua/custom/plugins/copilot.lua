@@ -69,7 +69,7 @@ return {
         '<leader>cpf',
         function()
           require('CopilotChat').ask(
-            '#buffer:listed /explain Act as a lead developer, walk me through the logic step by step, for each significant function or block, explain: 1. Inputs and Outputs, 2.Edge cases, 3. Are there any performance bottlenecks or clever optimizations here, 4. What external libraries or internal modules is this logic reliant here?',
+            '#buffer:listed /explain Act as a lead developer, walk me through the logic step by step, for each significant function or block, explain: 1. The logical purpose, 2. How it achieves this purpose, 3. What are the inputs / outputs, 4. How it connects to the other parts of the code',
             {
               selection = false,
             }
