@@ -1,106 +1,104 @@
 return {
-  -- 1. The Core Engine (Ghost Text)
+  -- 1. The Core Engine (Unchanged, keeps your tab completion)
   {
     'github/copilot.vim',
     config = function()
-      -- Disable default tab so it doesn't conflict
       vim.g.copilot_no_tab_map = true
-      -- Map <leader><Tab> in Insert mode to accept the suggestion
-      -- If your leader is <Space>, you will press: Space then Tab
-      vim.keymap.set('i', '<leader><Tab>', 'copilot#Accept("<CR>")', {
-        silent = true,
-        expr = true,
-        replace_keycodes = false,
-      })
+      vim.keymap.set('i', '<leader><Tab>', 'copilot#Accept("<CR>")', { silent = true, expr = true, replace_keycodes = false })
     end,
   },
 
-  -- 2. The Chat Interface
+  -- 2. The Chat Interface (Refactored)
   {
     'CopilotC-Nvim/CopilotChat.nvim',
     dependencies = {
       { 'github/copilot.vim' },
       { 'nvim-lua/plenary.nvim' },
     },
-    build = 'make tiktoken',
+    build = 'make tiktoken', -- Only on MacOS or Linux
     opts = {
       debug = false,
-      model = 'gpt-4.1', -- Use a '0x' model to save your 300 monthly credits
+      model = 'gpt-4o', -- Your preferred model
+
+      -- 1. Classic Vim Layout: Vertical Split
+      window = {
+        layout = 'vertical', -- 'float', 'vertical', 'horizontal', 'replace'
+        width = 0.4, -- Percentage of screen width
+        height = 0.4,
+        relative = 'editor',
+      },
+
+      -- Default context
+      context = 'buffers',
     },
-    keys = {
-      -- 1. Explain highlighted code
-      { '<leader>ce', '<cmd>CopilotChatExplain<cr>', mode = 'v', desc = 'CopilotChat - Explain code' },
 
-      -- 2. Direct Refactor (Applies changes to the code)
-      {
-        '<leader>cf',
-        function()
-          local input = vim.fn.input 'Refactor instruction: '
-          if input ~= '' then
-            require('CopilotChat').ask(input, {
-              -- This tells the AI to treat the output as a direct replacement
-              selection = require('CopilotChat.select').visual,
-              window = {
-                layout = 'float', -- Progress appears in a small popup
-                title = 'Refactoring...',
-              },
-            })
-          end
-        end,
-        mode = 'v',
-        desc = 'CopilotChat - Refactor code (Direct)',
-      },
+    config = function(_, opts)
+      local chat = require 'CopilotChat'
+      local select = require 'CopilotChat.select'
 
-      -- 3. Explain Project (Uses all open buffers)
-      {
-        '<leader>cpe',
-        function()
-          require('CopilotChat').ask(
-            '#buffer:listed /explain Act as a senior software architect. I am going to provide code. please analyze them and provide 1.A high level summary of what this code does, 2. Identify the main modules, classes or functions and how they interact, 3.Explain how data enters the system, moves through these components and where it ends up, 4.Identify any specific patterns used',
-            {
-              selection = false, -- Ignore current cursor/highlight
-            }
-          )
-        end,
-        desc = 'CopilotChat - Explain Project Architecture',
-      },
-      --4. Understand how the code does what it does
-      {
-        '<leader>cpf',
-        function()
-          require('CopilotChat').ask(
-            '#buffer:listed /explain Act as a lead developer, walk me through the logic step by step, for each significant function or block, explain: 1. The logical purpose, 2. How it achieves this purpose, 3. What are the inputs / outputs, 4. How it connects to the other parts of the code',
-            {
-              selection = false,
-            }
-          )
-        end,
-        desc = 'CopilotChat - Explain how the code works step by step',
-      },
-      -- 5. Debug Console/Messages
-      {
-        '<leader>cpd',
-        function()
-          -- Capture the last 20 lines of the Neovim message history
-          local messages = vim.fn.execute 'messages'
-          local lines = vim.split(messages, '\n')
-          local last_output = table.concat(vim.list_slice(lines, #lines - 20), '\n')
+      chat.setup(opts)
 
-          if last_output ~= '' then
-            require('CopilotChat').ask(
-              'I am seeing this console output/error. Can you explain what is happening and how to fix it?\n\nOutput:\n' .. last_output,
-              {
-                selection = false, -- Don't use current code selection
-              }
-            )
-          else
-            print 'No console output found to debug!'
-          end
-        end,
-        desc = 'CopilotChat - Debug latest console output',
-      },
-      -- 6. Open Chat (Standard)
-      { '<leader>cc', '<cmd>CopilotChat<cr>', desc = 'CopilotChat - Open chat' },
-    },
+      -- Helper to create mappings
+      local function map(mode, lhs, rhs, desc)
+        vim.keymap.set(mode, lhs, rhs, { desc = 'AI: ' .. desc, noremap = true, silent = true })
+      end
+
+      -- --- KEYMAPPINGS --- --
+
+      -- 1. TOGGLE CHAT
+      map({ 'n', 'v' }, '<leader>aa', function()
+        chat.toggle()
+      end, 'Toggle Chat')
+
+      -- 2. EXPLAIN (Visual Selection)
+      map('v', '<leader>ae', function()
+        chat.ask('/explain You are a senior software developer, Explain how this code works.', { selection = select.visual })
+      end, 'Explain Selection')
+
+      -- 3. REFACTOR (Interactive)
+      -- Opens chat, asks for instruction, shows diff. Safer than auto-replace.
+      map('v', '<leader>ar', function()
+        local input = vim.fn.input 'Refactor goal: '
+        if input ~= '' then
+          chat.ask(input, { selection = select.visual })
+        end
+      end, 'Refactor Selection')
+
+      -- 4. FIX / DEBUG (Diagnostics)
+      -- Fixes the error under your cursor (LSP/Linter errors)
+      map('n', '<leader>ad', function()
+        chat.ask('/fix Fix the diagnostic error at cursor.', { selection = select.visual })
+      end, 'Fix Diagnostic at Cursor')
+
+      -- 5. DEBUG (External Terminal)
+      -- Copy an error from your terminal, then press this.
+      -- It reads your system clipboard (+) and the current buffer.
+      map('n', '<leader>at', function()
+        local clip_content = vim.fn.getreg '+'
+        chat.ask('Fix this error from my terminal output:\n\n' .. clip_content, {
+          selection = select.buffer,
+        })
+      end, 'Fix Error from Clipboard')
+
+      -- 6. EXPLAIN PROJECT (All Listed Buffers)
+      -- This sends the content of ALL listed buffers to the AI for a full architecture review.
+      map('n', '<leader>ap', function()
+        -- We manually require the module inside the function to avoid startup errors
+        require('CopilotChat').ask(
+          '#buffer:listed /explain Act as a senior software architect. Provide a high-level summary, module interactions, and patterns.',
+          { selection = false }
+        )
+      end, 'Explain Project Architecture (Listed Buffers)')
+
+      -- 7. DEEP TECHNICAL ANALYSIS (All Open Buffers)
+      -- Lists functions, signatures, inputs/outputs, and step-by-step logic.
+      map('n', '<leader>af', function()
+        require('CopilotChat').ask(
+          -- The prompt explicitly asks for technical details on all buffers
+          '#buffer:listed /explain Analyze the code technically. For each major component/function in the open buffers, provide: \n1. Function Signature (Inputs/Outputs) \n2. Logic Flow (Step-by-step) \n3. Edge Cases or Constraints.',
+          { selection = false }
+        )
+      end, 'Deep Technical Analysis (Functions & I/O)')
+    end,
   },
 }
